@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sylhet-Net Support CRM</title>
-  <!-- Tailwind CSS, FontAwesome & Supabase SDK -->
+  <title>Sylhet-Net CRM — Executive Workspace</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #0f172a; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -18,85 +16,273 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
 
-  <!-- Toast Notification System -->
-  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
-
-  <!-- Top Navigation Header -->
-  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-6 py-3.5 flex flex-wrap justify-between items-center shadow-md">
+  <!-- Executive Header -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-6 py-3 flex flex-wrap justify-between items-center shadow-lg">
     <div class="flex items-center space-x-3">
-      <div class="bg-blue-600/20 border border-blue-500/30 p-2.5 rounded-xl text-blue-400">
+      <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2.5 rounded-xl text-white shadow-md shadow-blue-500/20">
         <i class="fa-solid fa-headset text-xl"></i>
       </div>
       <div>
-        <h1 class="text-lg font-bold tracking-wide text-white">Sylhet-Net <span class="text-blue-400">Broadband</span></h1>
-        <p class="text-xs text-slate-400">Support & Ticketing CRM Dashboard</p>
+        <h1 class="text-lg font-bold tracking-wide text-white">Sylhet-Net <span class="text-blue-400">Executive Workspace</span></h1>
+        <p class="text-xs text-slate-400">Customer Support & Complaint Ticketing System</p>
       </div>
     </div>
     
-    <!-- Quick Live Stats Counter -->
-    <div class="flex items-center gap-3 mt-2 sm:mt-0">
-      <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
-        <span class="text-slate-400">মোট কমপ্লেইন:</span> <strong id="stat-total" class="text-blue-400 font-bold ml-1">0</strong>
+    <!-- Active Agent & Live Stats -->
+    <div class="flex flex-wrap items-center gap-3 mt-2 sm:mt-0">
+      <div class="bg-slate-800/90 px-3 py-1.5 rounded-xl border border-blue-500/30 flex items-center gap-2">
+        <i class="fa-solid fa-user-gear text-blue-400 text-xs"></i>
+        <span class="text-xs text-slate-300 font-medium">অপারেটর/এজেন্ট:</span>
+        <select id="activeAgent" class="bg-slate-950 text-blue-400 font-bold text-xs rounded-lg border border-slate-700 px-2 py-1 focus:outline-none">
+          <option value="Rasel">Rasel</option>
+          <option value="Agent 1">Agent 1</option>
+          <option value="Agent 2">Agent 2</option>
+          <option value="Agent 3">Agent 3</option>
+          <option value="Agent 4">Agent 4</option>
+          <option value="Agent 5">Agent 5</option>
+        </select>
       </div>
-      <div class="bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 text-xs">
-        <span class="text-rose-400">পেন্ডিং:</span> <strong id="stat-pending" class="text-rose-400 font-bold ml-1">0</strong>
-      </div>
-      <div class="bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 text-xs">
-        <span class="text-emerald-400">সম্পন্ন:</span> <strong id="stat-completed" class="text-emerald-400 font-bold ml-1">0</strong>
+
+      <div class="flex items-center gap-2 text-xs">
+        <div class="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+          <span class="text-slate-400">মোট কমপ্লেন:</span> <strong id="stat-total" class="text-blue-400 font-mono ml-1">0</strong>
+        </div>
+        <div class="bg-rose-500/10 px-3 py-1.5 rounded-xl border border-rose-500/20">
+          <span class="text-rose-400">পেন্ডিং:</span> <strong id="stat-pending" class="text-rose-400 font-mono ml-1">0</strong>
+        </div>
+        <div class="bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+          <span class="text-emerald-400">সম্পন্ন:</span> <strong id="stat-completed" class="text-emerald-400 font-mono ml-1">0</strong>
+        </div>
       </div>
     </div>
   </header>
 
   <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
 
-    <!-- Smart Auto-Parse Entry Box -->
-    <div class="bg-slate-900/80 backdrop-blur p-5 rounded-2xl border border-slate-800 shadow-xl">
-      <div class="flex justify-between items-center mb-3">
+    <!-- Mode Switcher Tabs -->
+    <div class="flex gap-2 border-b border-slate-800 pb-2">
+      <button onclick="switchMode('detailed')" id="tab-detailed" class="mode-tab bg-blue-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20 transition">
+        <i class="fa-solid fa-list-check"></i> ডিটেইলড কমপ্লেন ফরম (Full Entry)
+      </button>
+      <button onclick="switchMode('quick')" id="tab-quick" class="mode-tab bg-slate-800 text-slate-400 text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 transition">
+        <i class="fa-solid fa-bolt text-amber-400"></i> ইজি বিলিং কুইক পেস্ট (Auto-Parse)
+      </button>
+    </div>
+
+    <!-- 1. Detailed Form Entry Mode -->
+    <div id="detailedFormSection" class="bg-slate-900/80 backdrop-blur p-5 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h2 class="text-sm font-semibold text-blue-400 flex items-center gap-2">
-          <i class="fa-solid fa-bolt text-amber-400"></i> ইজি বিলিং কুইক এন্ট্রি (Easy Billing Smart Auto-Parse)
+          <i class="fa-solid fa-file-circle-plus"></i> কাস্টমার কল ও কমপ্লেন রেজিস্ট্রেশন ফরম
         </h2>
-        <span class="text-xs text-slate-500">কপি করা পুরো টেক্সট পেস্ট করে "টিকিট তুলুন" এ চাপুন</span>
+        <span class="text-xs text-slate-500">সব তথ্য সঠিকভাবে পূরণ করে সাবমিট করুন</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 text-xs">
+        
+        <!-- Call Type -->
+        <div>
+          <label class="block text-slate-400 mb-1">কল টাইপ (Call Type)</label>
+          <select id="formCallType" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="Incoming">Incoming (ইনকামিং)</option>
+            <option value="Outgoing">Outgoing (আউটগোয়িং)</option>
+          </select>
+        </div>
+
+        <!-- Client NNP -->
+        <div>
+          <label class="block text-slate-400 mb-1">ক্লায়েন্ট / NNP আইডি</label>
+          <input type="text" id="formNnp" placeholder="যেমন: NNP2854" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500 font-mono">
+        </div>
+
+        <!-- Phone -->
+        <div>
+          <label class="block text-slate-400 mb-1">মোবাইল নাম্বার</label>
+          <input type="text" id="formPhone" placeholder="017XXXXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500 font-mono">
+        </div>
+
+        <!-- Call Duration -->
+        <div>
+          <label class="block text-slate-400 mb-1">কল ডিউরেশন</label>
+          <select id="formCallDuration" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="< 1 Min">&lt; ১ মিনিট</option>
+            <option value="1 - 3 Min">১ - ৩ মিনিট</option>
+            <option value="3 - 5 Min">৩ - ৫ মিনিট</option>
+            <option value="5 - 10 Min">৫ - ১০ মিনিট</option>
+            <option value="> 10 Min">&gt; ১০ মিনিট</option>
+          </select>
+        </div>
+
+        <!-- Select Complain (Full Options Included) -->
+        <div class="col-span-1 md:col-span-2">
+          <label class="block text-blue-400 font-semibold mb-1">কমপ্লেন নির্বাচন করুন (Select Complain)</label>
+          <select id="formDiscussion" class="w-full bg-slate-950 border border-blue-500/40 rounded-xl p-2.5 text-slate-100 font-medium focus:border-blue-500">
+            <option value="No internet / ইন্টারনেট লাইন নাই">No internet / ইন্টারনেট লাইন নাই</option>
+            <option value="Cable disconnected / লাইনের তার ছিঁড়ে গেছে">Cable disconnected / লাইনের তার ছিঁড়ে গেছে</option>
+            <option value="New connection / নতুন কানেকশন দিতে হবে">New connection / নতুন কানেকশন দিতে হবে</option>
+            <option value="Change home / বাসা পরিবর্তন">Change home / বাসা পরিবর্তন</option>
+            <option value="Change room / রুম পরিবর্তন">Change room / রুম পরিবর্তন</option>
+            <option value="Room cable extension / রুমের তার বড় করতে হবে">Room cable extension / রুমের তার বড় করতে হবে</option>
+            <option value="Temporary disable / সাময়িকভাবে লাইন স্টপ হবে">Temporary disable / সাময়িকভাবে লাইন স্টপ হবে</option>
+
+            <option value="Connection intermittent / কানেকশন আসা যাওয়া করে">Connection intermittent / কানেকশন আসা যাওয়া করে</option>
+            <option value="Slow internet / ইন্টারনেট লাইন স্লো">Slow internet / ইন্টারনেট লাইন স্লো</option>
+            <option value="Slow internet at night / রাতের বেলা ইন্টারনেট লাইন স্লো">Slow internet at night / রাতের বেলা ইন্টারনেট লাইন স্লো</option>
+            <option value="Can not browse specific website / নির্দিষ্ট কোন সাইটে ব্রাউজ করা যাচ্ছে না">Can not browse specific website / নির্দিষ্ট কোন সাইটে ব্রাউজ করা যাচ্ছে না</option>
+            <option value="Ping loss / PC থেকে কানেকশন পর্যন্ত পেকেট বা পিং লস">Ping loss / PC থেকে কানেকশন পর্যন্ত পেকেট বা পিং লস</option>
+
+            <option value="Update bandwidth / Bandwidth Update করতে হবে">Update bandwidth / Bandwidth Update করতে হবে</option>
+            <option value="Change connector / Connector পরিবর্তন">Change connector / Connector পরিবর্তন</option>
+            <option value="Change media converter / Media Converter পরিবর্তন">Change media converter / Media Converter পরিবর্তন</option>
+            <option value="Change ONU / ONU পরিবর্তন">Change ONU / ONU পরিবর্তন</option>
+            <option value="Change router / Router পরিবর্তন">Change router / Router পরিবর্তন</option>
+            <option value="Router settings / Router সেটিংস">Router settings / Router সেটিংস</option>
+            <option value="Password change / পাসওয়ার্ড পরিবর্তন">Password change / পাসওয়ার্ড পরিবর্তন</option>
+
+            <option value="Complaint against support staff / সাপোর্ট ম্যান এর বিরুদ্ধে কমপ্লেন">Complaint against support staff / সাপোর্ট ম্যান এর বিরুদ্ধে কমপ্লেন</option>
+            <option value="Monthly bill complaint / মাসিক ভাড়া নিয়ে অভিযোগ">Monthly bill complaint / মাসিক ভাড়া নিয়ে অভিযোগ</option>
+            <option value="Disconnect line for customer leaving home / গ্রাহক চলে যাওয়ার কারণে বিচ্ছিন্ন">Disconnect line for customer leaving home / গ্রাহক চলে যাওয়ার কারণে বিচ্ছিন্ন</option>
+            <option value="Disconnect line for due / বকেয়া টাকার কারণে সংযোগ বিচ্ছিন্ন">Disconnect line for due / বকেয়া টাকার কারণে সংযোগ বিচ্ছিন্ন</option>
+            <option value="Others / অন্যান্য">Others / অন্যান্য</option>
+          </select>
+        </div>
+
+        <!-- Assign Complain To User/Tech -->
+        <div>
+          <label class="block text-slate-400 mb-1">অ্যাসাইন টেকনিশিয়ান (Assign To)</label>
+          <select id="formAssignedTech" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="Unassigned">Unassigned</option>
+            <option value="Rubel">Rubel</option>
+            <option value="Rimon">Rimon</option>
+            <option value="Nobin">Nobin</option>
+            <option value="Sunny">Sunny</option>
+            <option value="Abdullah">Abdullah</option>
+            <option value="Jubed">Jubed</option>
+            <option value="Sajjad">Sajjad</option>
+            <option value="Ali">Ali</option>
+            <option value="Mahedi">Mahedi</option>
+          </select>
+        </div>
+
+        <!-- Priority -->
+        <div>
+          <label class="block text-slate-400 mb-1">প্রায়োরিটি (Priority)</label>
+          <select id="formPriority" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="Normal">Normal</option>
+            <option value="High">High (জরুরি)</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+
+        <!-- Rescheduled By -->
+        <div>
+          <label class="block text-slate-400 mb-1">রি-শিডিউলড বাই</label>
+          <select id="formRescheduledBy" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="None">None</option>
+            <option value="Customer">Customer (গ্রাহক)</option>
+            <option value="Office">Office (অফিস)</option>
+          </select>
+        </div>
+
+        <!-- Follow-up Request -->
+        <div>
+          <label class="block text-slate-400 mb-1">ফলোআপ প্রয়োজন?</label>
+          <select id="formFollowupNeeded" onchange="toggleFollowupFields()" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
+            <option value="No">No (না)</option>
+            <option value="Yes">Yes (হ্যাঁ)</option>
+          </select>
+        </div>
+
+        <!-- Follow-up Date -->
+        <div id="followupDateDiv" class="hidden">
+          <label class="block text-amber-400 mb-1 font-semibold">ফলোআপ তারিখ</label>
+          <input type="date" id="formFollowupDate" class="w-full bg-slate-950 border border-amber-500/50 rounded-xl p-2.5 text-slate-200 focus:border-amber-400">
+        </div>
+
+        <!-- Follow-up Reason -->
+        <div id="followupReasonDiv" class="hidden col-span-1 md:col-span-2">
+          <label class="block text-amber-400 mb-1 font-semibold">ফলোআপ রিজন (Reason)</label>
+          <select id="formFollowupReason" class="w-full bg-slate-950 border border-amber-500/50 rounded-xl p-2.5 text-slate-200 focus:border-amber-400">
+            <option value="Technical Visit">Technical Visit</option>
+            <option value="Customer Confirmation">Customer Confirmation</option>
+            <option value="Customer Not Available">Customer Not Available</option>
+            <option value="Payment">Payment</option>
+            <option value="Router Testing">Router Testing</option>
+            <option value="ONU Replacement">ONU Replacement</option>
+            <option value="Callback">Callback</option>
+            <option value="Line Activation">Line Activation</option>
+            <option value="Line Deactivation">Line Deactivation</option>
+            <option value="Device Collection">Device Collection</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+
+        <!-- Remarks -->
+        <div class="col-span-1 md:col-span-3 lg:col-span-4">
+          <label class="block text-slate-400 mb-1">রিমার্কস / বিস্তারিত বিবরণ</label>
+          <textarea id="formRemarks" rows="2" placeholder="কাস্টমারের দেওয়া অতিরিক্ত তথ্য বা নোট লিখুন..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500"></textarea>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="submitDetailedForm()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-6 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
+          <i class="fa-solid fa-paper-plane"></i> টিকিট জমা দিন
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Quick Paste Mode -->
+    <div id="quickPasteSection" class="hidden bg-slate-900/80 backdrop-blur p-5 rounded-2xl border border-slate-800 shadow-xl space-y-3">
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm font-semibold text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-bolt"></i> ইজি বিলিং কুইক পেস্ট অটো-পার্স
+        </h2>
       </div>
       <div class="flex flex-col md:flex-row gap-3">
-        <textarea id="rawInput" rows="2" placeholder="উদাহরণ: CALL-20260816-0006 NNP2554 Nasima Akter 8801912145993 ONU Red Light Rubel..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-600 transition"></textarea>
-        <button onclick="parseAndAddTicket()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-6 py-3 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20">
-          <i class="fa-solid fa-plus-circle"></i> টিকিট তুলুন
+        <textarea id="rawInput" rows="2" placeholder="Easy Billing থেকে কপি করা পুরো টেক্সট পেস্ট করুন..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-500 text-slate-200"></textarea>
+        <button onclick="parseAndAddTicket()" class="bg-amber-600 hover:bg-amber-500 text-white font-medium px-6 py-3 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-amber-600/20">
+          <i class="fa-solid fa-plus-circle"></i> কুইক এন্ট্রি
         </button>
       </div>
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-slate-800">
       
-      <!-- Search Input -->
+      <!-- Search Box -->
       <div class="relative w-full md:w-80">
         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-sm"></i>
-        <input type="text" id="searchInput" oninput="renderTickets()" placeholder="Call ID, NNP, মোবাইল বা নাম..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-200">
+        <input type="text" id="searchInput" oninput="renderTickets()" placeholder="Search NNP, Phone, Agent, Complain..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-200">
       </div>
 
-      <!-- Technician & Status Filters -->
+      <!-- Filters -->
       <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-        
-        <!-- Tech Filter Dropdown -->
-        <select id="techFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-300 focus:outline-none focus:border-blue-500">
-          <option value="All">সব টেকনিশিয়ান</option>
+        <select id="agentFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300">
+          <option value="All">সকল এজেন্টের টিকিট</option>
+          <option value="Rasel">Rasel</option>
+          <option value="Agent 1">Agent 1</option>
+          <option value="Agent 2">Agent 2</option>
+          <option value="Agent 3">Agent 3</option>
+          <option value="Agent 4">Agent 4</option>
+          <option value="Agent 5">Agent 5</option>
+        </select>
+
+        <select id="techFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300">
+          <option value="All">সকল টেকনিশিয়ান</option>
           <option value="Rubel">Rubel</option>
           <option value="Rimon">Rimon</option>
           <option value="Nobin">Nobin</option>
           <option value="Sunny">Sunny</option>
           <option value="Abdullah">Abdullah</option>
           <option value="Jubed">Jubed</option>
-          <option value="Unassigned">Unassigned</option>
         </select>
 
-        <!-- Status Filter Buttons -->
         <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-          <button onclick="setFilter('All')" id="btn-All" class="filter-btn bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium transition">সব</button>
-          <button onclick="setFilter('Pending')" id="btn-Pending" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">পেন্ডিং</button>
-          <button onclick="setFilter('Completed')" id="btn-Completed" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">সম্পন্ন</button>
-          <button onclick="setFilter('Rescheduled')" id="btn-Rescheduled" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">রি-শিডিউল</button>
+          <button onclick="setFilter('All')" id="btn-All" class="filter-btn bg-blue-600 text-white px-3 py-1.5 rounded-lg">সব</button>
+          <button onclick="setFilter('Pending')" id="btn-Pending" class="filter-btn text-slate-400 px-3 py-1.5 rounded-lg">পেন্ডিং</button>
+          <button onclick="setFilter('Completed')" id="btn-Completed" class="filter-btn text-slate-400 px-3 py-1.5 rounded-lg">সম্পন্ন</button>
         </div>
-
       </div>
     </div>
 
@@ -106,10 +292,11 @@
         <table class="w-full text-left border-collapse text-sm">
           <thead>
             <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800 text-xs uppercase tracking-wider font-semibold">
-              <th class="p-4">কল / কাস্টমার ID</th>
-              <th class="p-4">মোবাইল</th>
-              <th class="p-4">সমস্যা ও বিবরণ (Details)</th>
-              <th class="p-4">টেকনিশিয়ান</th>
+              <th class="p-4">ক্লায়েন্ট / মোবাইল</th>
+              <th class="p-4">এজেন্ট ও কল টাইপ</th>
+              <th class="p-4">কমপ্লেন ও বিবরণ (Discussion)</th>
+              <th class="p-4">ফলোআপ ডিটেইলস</th>
+              <th class="p-4">অ্যাসাইনড টেক</th>
               <th class="p-4">স্ট্যাটাস</th>
               <th class="p-4 text-center">অ্যাকশন</th>
             </tr>
@@ -123,93 +310,131 @@
 
   </main>
 
-  <!-- JavaScript Section -->
- <!-- JavaScript Section (Updated Parser & Toast Alert) -->
+  <!-- JavaScript Code Section -->
   <script>
     // -------------------------------------------------------------
-    // ১. SUPABASE কনফিগারেশন
+    // ১. SUPABASE কনফিগারেশন (Unchanged Credentials)
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://ntxmdhrpcphxyxsmaijf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Ck8aN-YD9JdsrP3KQRK0uQ_rBUbaW82'; 
-    
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let ticketsData = [];
     let currentFilter = 'All';
 
-    // ১-ক্লিক অ্যালার্ট ও নোটিফিকেশন
-    function showNotification(message, isError = false) {
-      // Browser Alert (১০০% নির্ভরযোগ্য) + Visual Feedback
-      if (isError) {
-        alert('❌ ' + message);
+    function toggleFollowupFields() {
+      const val = document.getElementById('formFollowupNeeded').value;
+      if (val === 'Yes') {
+        document.getElementById('followupDateDiv').classList.remove('hidden');
+        document.getElementById('followupReasonDiv').classList.remove('hidden');
       } else {
-        alert('✅ ' + message);
+        document.getElementById('followupDateDiv').classList.add('hidden');
+        document.getElementById('followupReasonDiv').classList.add('hidden');
       }
     }
 
-    // -------------------------------------------------------------
-    // ২. এডভান্সড কাস্টম পার্সার (Call Log + Complain List ২টাই সাপোর্ট করবে)
-    // -------------------------------------------------------------
+    function switchMode(mode) {
+      if (mode === 'detailed') {
+        document.getElementById('detailedFormSection').classList.remove('hidden');
+        document.getElementById('quickPasteSection').classList.add('hidden');
+        document.getElementById('tab-detailed').className = 'mode-tab bg-blue-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20';
+        document.getElementById('tab-quick').className = 'mode-tab bg-slate-800 text-slate-400 text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2';
+      } else {
+        document.getElementById('detailedFormSection').classList.add('hidden');
+        document.getElementById('quickPasteSection').classList.remove('hidden');
+        document.getElementById('tab-quick').className = 'mode-tab bg-amber-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-amber-600/20';
+        document.getElementById('tab-detailed').className = 'mode-tab bg-slate-800 text-slate-400 text-xs font-semibold px-4 py-2.5 rounded-xl flex items-center gap-2';
+      }
+    }
+
+    // Submit Detailed Complaint Form
+    async function submitDetailedForm() {
+      const activeAgent = document.getElementById('activeAgent').value;
+      const nnp = document.getElementById('formNnp').value.trim().toUpperCase() || 'NNP-N/A';
+      const phone = document.getElementById('formPhone').value.trim() || 'N/A';
+      const callType = document.getElementById('formCallType').value;
+      const discussion = document.getElementById('formDiscussion').value;
+      const duration = document.getElementById('formCallDuration').value;
+      const assignedTech = document.getElementById('formAssignedTech').value;
+      const priority = document.getElementById('formPriority').value;
+      const rescheduledBy = document.getElementById('formRescheduledBy').value;
+      const followupNeeded = document.getElementById('formFollowupNeeded').value;
+      const followupDate = document.getElementById('formFollowupDate').value || null;
+      const followupReason = document.getElementById('formFollowupReason').value;
+      const remarks = document.getElementById('formRemarks').value.trim();
+
+      const callId = `CALL-${nnp}-${Date.now().toString().slice(-4)}`;
+
+      const ticketObj = {
+        call_id: callId,
+        customer_id: nnp,
+        phone: phone,
+        details: remarks || discussion,
+        status: 'Pending',
+        assigned_to: assignedTech,
+        agent_name: activeAgent,
+        call_type: callType,
+        discussion: discussion,
+        call_duration: duration,
+        follow_up_needed: followupNeeded,
+        follow_up_date: followupNeeded === 'Yes' ? followupDate : null,
+        follow_up_reason: followupNeeded === 'Yes' ? followupReason : null,
+        priority: priority,
+        rescheduled_by: rescheduledBy,
+        remarks: remarks
+      };
+
+      const { error } = await db.from('tickets').insert([ticketObj]);
+
+      if (error) {
+        alert('❌ কমপ্লেন জমা হয়নি: ' + error.message);
+      } else {
+        alert('✅ কমপ্লেন টিকিট সফলভাবে জমা হয়েছে!');
+        document.getElementById('formNnp').value = '';
+        document.getElementById('formPhone').value = '';
+        document.getElementById('formRemarks').value = '';
+        fetchTickets();
+      }
+    }
+
+    // Quick Paste Easy Billing Parser
     async function parseAndAddTicket() {
       const raw = document.getElementById('rawInput').value.trim();
-      if (!raw) return showNotification('ইজি বিলিং এর টেক্সট পেস্ট করুন!', true);
+      if (!raw) return alert('ইজি বিলিং এর টেক্সট পেস্ট করুন!');
 
-      // ১. Call ID Extractor
+      const activeAgent = document.getElementById('activeAgent').value;
       const callIdMatch = raw.match(/CALL-[A-Za-z0-9-]+/i);
-      
-      // ২. Customer NNP ID Extractor
       const nnpMatch = raw.match(/NNP\d+/i);
-      
-      // ৩. Phone Extractor
       const phoneMatch = raw.match(/(?:8801|01)\d{9}/);
 
-      // ৪. Tech Name Extractor (সব টেকনিশিয়ানের নাম)
-      const techNames = ['Rubel', 'Rimon', 'Nobin', 'Sunny', 'Abdullah', 'Jubed', 'Sajjad', 'Ali', 'Mahedi', 'Rasel', 'Abid', 'Jubed Nur'];
-      let matchedTech = 'Unassigned';
-      
-      techNames.forEach(tech => {
-        if (new RegExp('\\b' + tech + '\\b', 'i').test(raw)) {
-          matchedTech = matchedTech === 'Unassigned' ? tech : `${matchedTech}, ${tech}`;
-        }
-      });
-
-      // Call ID না থাকলে NNP আইডি দিয়ে ইউনিক আইডি তৈরি করা
       const nnpVal = nnpMatch ? nnpMatch[0].toUpperCase() : 'NNP-UNKNOWN';
-      const finalCallId = callIdMatch ? callIdMatch[0] : `${nnpVal}-${Date.now().toString().slice(-4)}`;
-
-      // ৫. সমস্যা বা কমপ্লেইন ফিল্টার করা
-      let cleanDetails = raw;
-      if (raw.includes('slow internet')) cleanDetails = 'Slow Internet All Time';
-      else if (raw.includes('onu red light') || raw.includes('ONU Red Light')) cleanDetails = 'ONU Red Light Issue';
-      else if (raw.includes('no internet')) cleanDetails = 'No Internet Connection';
+      const finalCallId = callIdMatch ? callIdMatch[0] : `CALL-${nnpVal}-${Date.now().toString().slice(-4)}`;
 
       const ticketObj = {
         call_id: finalCallId,
         customer_id: nnpVal,
         phone: phoneMatch ? phoneMatch[0] : 'N/A',
-        details: `${cleanDetails} | Raw: ${raw.slice(0, 100)}...`,
+        details: raw,
         status: 'Pending',
-        assigned_to: matchedTech
+        assigned_to: 'Unassigned',
+        agent_name: activeAgent,
+        discussion: 'Quick Entry',
+        call_type: 'Incoming'
       };
 
-      // Supabase-এ সেভ করা
-      const { data, error } = await db.from('tickets').insert([ticketObj]);
-      
+      const { error } = await db.from('tickets').insert([ticketObj]);
       if (error) {
-        console.error(error);
-        showNotification('সেভ করা যায়নি! ' + error.message, true);
+        alert('❌ সেভ হয়নি: ' + error.message);
       } else {
-        showNotification('টিকিট সফলভাবে যোগ করা হয়েছে!');
+        alert('✅ কুইক টিকিট সেভ হয়েছে!');
         document.getElementById('rawInput').value = '';
         fetchTickets();
       }
     }
 
-    // -------------------------------------------------------------
-    // ৩. ডেটা লোড ও রেন্ডারিং
-    // -------------------------------------------------------------
+    // Load Tickets
     async function fetchTickets() {
-      const { data, error } = await db.from('tickets').select('*');
+      const { data, error } = await db.from('tickets').select('*').order('created_at', { ascending: false });
       if (!error && data) {
         ticketsData = data;
         updateCounters();
@@ -225,19 +450,21 @@
 
     function renderTickets() {
       const search = document.getElementById('searchInput').value.toLowerCase();
+      const agentFilter = document.getElementById('agentFilter').value;
       const techFilter = document.getElementById('techFilter').value;
       const tbody = document.getElementById('ticketTableBody');
       tbody.innerHTML = '';
 
       const filtered = ticketsData.filter(t => {
         const matchesStatus = currentFilter === 'All' || t.status === currentFilter;
+        const matchesAgent = agentFilter === 'All' || t.agent_name === agentFilter;
         const matchesTech = techFilter === 'All' || (t.assigned_to && t.assigned_to.toLowerCase().includes(techFilter.toLowerCase()));
-        const matchesSearch = (t.call_id + t.customer_id + t.phone + t.details).toLowerCase().includes(search);
-        return matchesStatus && matchesTech && matchesSearch;
+        const searchString = `${t.call_id} ${t.customer_id} ${t.phone} ${t.agent_name} ${t.discussion} ${t.details}`.toLowerCase();
+        return matchesStatus && matchesAgent && matchesTech && searchString.includes(search);
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেইন পাওয়া যায়নি।</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেন রেকর্ড পাওয়া যায়নি।</td></tr>`;
         return;
       }
 
@@ -246,20 +473,34 @@
                             t.status === 'Rescheduled' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
                             'bg-rose-500/10 text-rose-400 border-rose-500/30';
 
+        const priorityBadge = t.priority === 'High' ? '<span class="text-[10px] bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded border border-rose-500/30">High</span>' : '';
+
         tbody.innerHTML += `
           <tr class="hover:bg-slate-800/40 transition border-b border-slate-800/40">
             <td class="p-4">
-              <div class="font-bold text-blue-400 font-mono">${t.call_id}</div>
-              <div class="text-xs text-slate-400 font-semibold">${t.customer_id}</div>
+              <div class="font-bold text-blue-400 font-mono">${t.customer_id}</div>
+              <div class="text-xs text-slate-400 font-mono">${t.phone}</div>
             </td>
             <td class="p-4">
-              <div class="font-medium text-slate-200 font-mono">${t.phone}</div>
+              <div class="font-semibold text-slate-200 text-xs flex items-center gap-1">
+                <i class="fa-solid fa-headset text-slate-500 text-[10px]"></i> ${t.agent_name || 'System'}
+              </div>
+              <div class="text-xs text-slate-500">${t.call_type || 'Incoming'} (${t.call_duration || 'N/A'})</div>
             </td>
-            <td class="p-4 max-w-xs md:max-w-md">
-              <p class="text-xs text-slate-300 line-clamp-2 leading-relaxed">${t.details}</p>
+            <td class="p-4 max-w-xs">
+              <div class="font-medium text-amber-400 text-xs flex items-center gap-1">
+                ${t.discussion || 'General Support'} ${priorityBadge}
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2 mt-0.5">${t.remarks || t.details || ''}</p>
+            </td>
+            <td class="p-4 text-xs">
+              ${t.follow_up_needed === 'Yes' ? `
+                <div class="text-amber-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-calendar-day"></i>${t.follow_up_date || 'N/A'}</div>
+                <div class="text-slate-400 text-[11px]">${t.follow_up_reason || ''}</div>
+              ` : '<span class="text-slate-600">No Followup</span>'}
             </td>
             <td class="p-4">
-              <span class="bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-medium">
+              <span class="bg-slate-800 border border-slate-700 text-slate-300 px-2 py-1 rounded text-xs font-medium">
                 <i class="fa-solid fa-user-gear text-slate-500 mr-1"></i>${t.assigned_to || 'Unassigned'}
               </span>
             </td>
@@ -269,8 +510,8 @@
               </span>
             </td>
             <td class="p-4 text-center">
-              <div class="flex justify-center items-center gap-1.5">
-                <button onclick="updateStatus('${t.call_id}', 'Completed')" title="Done" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white p-2 rounded-xl transition">
+              <div class="flex justify-center items-center gap-1">
+                <button onclick="updateStatus('${t.call_id}', 'Completed')" title="Complete" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white p-2 rounded-xl transition">
                   <i class="fa-solid fa-check"></i>
                 </button>
                 <button onclick="updateStatus('${t.call_id}', 'Rescheduled')" title="Reschedule" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white p-2 rounded-xl transition">
@@ -283,17 +524,9 @@
       });
     }
 
-    // -------------------------------------------------------------
-    // ৪. ১-ক্লিকে স্ট্যাটাস আপডেট
-    // -------------------------------------------------------------
     async function updateStatus(callId, newStatus) {
       const { error } = await db.from('tickets').update({ status: newStatus }).eq('call_id', callId);
-      if (!error) {
-        showNotification(`স্ট্যাটাস '${newStatus}' সম্পন্ন হয়েছে!`);
-        fetchTickets();
-      } else {
-        showNotification('স্ট্যাটাস আপডেট করা যায়নি!', true);
-      }
+      if (!error) fetchTickets();
     }
 
     function setFilter(status) {
@@ -303,8 +536,7 @@
         btn.classList.add('text-slate-400');
       });
       document.getElementById(`btn-${status}`).classList.add('bg-blue-600', 'text-white');
-      document.getElementById(`btn-${status}`).classList.remove('text-slate-400');
-      renderTickets();
+      fetchTickets();
     }
 
     fetchTickets();
