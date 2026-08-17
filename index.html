@@ -124,13 +124,12 @@
   </main>
 
   <!-- JavaScript Section -->
+ <!-- JavaScript Section (Updated Parser & Toast Alert) -->
   <script>
     // -------------------------------------------------------------
-    // ১. SUPABASE কনফিগারেশন (আপনার প্রকল্পের ক্রেডেনশিয়ালস)
+    // ১. SUPABASE কনফিগারেশন
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://ntxmdhrpcphxyxsmaijf.supabase.co';
-    
-    // ⚠️ আপনার Supabase Dashboard > Settings > API Keys থেকে Publishable Key-টি কপি করে নিচের কোটেশনের ভেতরে বসান:
     const SUPABASE_KEY = 'sb_publishable_Ck8aN-YD9JdsrP3KQRK0uQ_rBUbaW82'; 
     
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -138,54 +137,69 @@
     let ticketsData = [];
     let currentFilter = 'All';
 
-    // Toast Notification System
-    function showToast(message, type = 'success') {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
-      toast.className = `${bgColor} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 animate-bounce`;
-      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+    // ১-ক্লিক অ্যালার্ট ও নোটিফিকেশন
+    function showNotification(message, isError = false) {
+      // Browser Alert (১০০% নির্ভরযোগ্য) + Visual Feedback
+      if (isError) {
+        alert('❌ ' + message);
+      } else {
+        alert('✅ ' + message);
+      }
     }
 
     // -------------------------------------------------------------
-    // ২. স্মার্ট অটো-পার্সার (Easy Billing Text Extractor)
+    // ২. এডভান্সড কাস্টম পার্সার (Call Log + Complain List ২টাই সাপোর্ট করবে)
     // -------------------------------------------------------------
     async function parseAndAddTicket() {
       const raw = document.getElementById('rawInput').value.trim();
-      if (!raw) return showToast('ইজি বিলিং এর টেক্সট পেস্ট করুন!', 'error');
+      if (!raw) return showNotification('ইজি বিলিং এর টেক্সট পেস্ট করুন!', true);
 
-      // Smart Matching Regex
+      // ১. Call ID Extractor
       const callIdMatch = raw.match(/CALL-[A-Za-z0-9-]+/i);
+      
+      // ২. Customer NNP ID Extractor
       const nnpMatch = raw.match(/NNP\d+/i);
+      
+      // ৩. Phone Extractor
       const phoneMatch = raw.match(/(?:8801|01)\d{9}/);
 
-      // Tech Name Parser
-      const techNames = ['Rubel', 'Rimon', 'Nobin', 'Sunny', 'Abdullah', 'Jubed', 'Sajjad', 'Ali', 'Mahedi', 'Rasel'];
+      // ৪. Tech Name Extractor (সব টেকনিশিয়ানের নাম)
+      const techNames = ['Rubel', 'Rimon', 'Nobin', 'Sunny', 'Abdullah', 'Jubed', 'Sajjad', 'Ali', 'Mahedi', 'Rasel', 'Abid', 'Jubed Nur'];
       let matchedTech = 'Unassigned';
+      
       techNames.forEach(tech => {
-        if (new RegExp(tech, 'i').test(raw)) matchedTech = tech;
+        if (new RegExp('\\b' + tech + '\\b', 'i').test(raw)) {
+          matchedTech = matchedTech === 'Unassigned' ? tech : `${matchedTech}, ${tech}`;
+        }
       });
 
-      const callIdVal = callIdMatch ? callIdMatch[0] : 'CALL-' + Date.now().toString().slice(-6);
+      // Call ID না থাকলে NNP আইডি দিয়ে ইউনিক আইডি তৈরি করা
+      const nnpVal = nnpMatch ? nnpMatch[0].toUpperCase() : 'NNP-UNKNOWN';
+      const finalCallId = callIdMatch ? callIdMatch[0] : `${nnpVal}-${Date.now().toString().slice(-4)}`;
+
+      // ৫. সমস্যা বা কমপ্লেইন ফিল্টার করা
+      let cleanDetails = raw;
+      if (raw.includes('slow internet')) cleanDetails = 'Slow Internet All Time';
+      else if (raw.includes('onu red light') || raw.includes('ONU Red Light')) cleanDetails = 'ONU Red Light Issue';
+      else if (raw.includes('no internet')) cleanDetails = 'No Internet Connection';
 
       const ticketObj = {
-        call_id: callIdVal,
-        customer_id: nnpMatch ? nnpMatch[0].toUpperCase() : 'N/A',
+        call_id: finalCallId,
+        customer_id: nnpVal,
         phone: phoneMatch ? phoneMatch[0] : 'N/A',
-        details: raw,
+        details: `${cleanDetails} | Raw: ${raw.slice(0, 100)}...`,
         status: 'Pending',
         assigned_to: matchedTech
       };
 
-      // Supabase-এ সেভ করা (Updating by primary key `call_id`)
+      // Supabase-এ সেভ করা
       const { data, error } = await db.from('tickets').insert([ticketObj]);
+      
       if (error) {
-        showToast('সেভ করা যায়নি! Supabase Key ঠিক আছে কি না চেক করুন।', 'error');
         console.error(error);
+        showNotification('সেভ করা যায়নি! ' + error.message, true);
       } else {
-        showToast('নতুন টিকিট সফলভাবে যোগ করা হয়েছে!');
+        showNotification('টিকিট সফলভাবে যোগ করা হয়েছে!');
         document.getElementById('rawInput').value = '';
         fetchTickets();
       }
@@ -223,7 +237,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেইন টিকিট পাওয়া যায়নি।</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেইন পাওয়া যায়নি।</td></tr>`;
         return;
       }
 
@@ -270,15 +284,15 @@
     }
 
     // -------------------------------------------------------------
-    // ৪. ১-ক্লিকে স্ট্যাটাস আপডেট (By Primary Key `call_id`)
+    // ৪. ১-ক্লিকে স্ট্যাটাস আপডেট
     // -------------------------------------------------------------
     async function updateStatus(callId, newStatus) {
       const { error } = await db.from('tickets').update({ status: newStatus }).eq('call_id', callId);
       if (!error) {
-        showToast(`স্ট্যাটাস '${newStatus}' আপডেট হয়েছে!`);
+        showNotification(`স্ট্যাটাস '${newStatus}' সম্পন্ন হয়েছে!`);
         fetchTickets();
       } else {
-        showToast('আপডেট করা যায়নি!', 'error');
+        showNotification('স্ট্যাটাস আপডেট করা যায়নি!', true);
       }
     }
 
@@ -293,7 +307,6 @@
       renderTickets();
     }
 
-    // অ্যাপ চালুর সাথে সাথে ডেটা ফেচ করা
     fetchTickets();
   </script>
 </body>
