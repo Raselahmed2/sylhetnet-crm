@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sylhet-Net Support CRM</title>
+  <!-- Tailwind CSS, FontAwesome & Supabase SDK -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-6 py-3.5 flex flex-wrap justify-between items-center shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="bg-blue-600/20 border border-blue-500/30 p-2.5 rounded-xl text-blue-400">
+        <i class="fa-solid fa-headset text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-lg font-bold tracking-wide text-white">Sylhet-Net <span class="text-blue-400">Broadband</span></h1>
+        <p class="text-xs text-slate-400">Support & Ticketing CRM Dashboard</p>
+      </div>
+    </div>
+    
+    <!-- Quick Live Stats Counter -->
+    <div class="flex items-center gap-3 mt-2 sm:mt-0">
+      <div class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 text-xs">
+        <span class="text-slate-400">মোট কমপ্লেইন:</span> <strong id="stat-total" class="text-blue-400 font-bold ml-1">0</strong>
+      </div>
+      <div class="bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20 text-xs">
+        <span class="text-rose-400">পেন্ডিং:</span> <strong id="stat-pending" class="text-rose-400 font-bold ml-1">0</strong>
+      </div>
+      <div class="bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 text-xs">
+        <span class="text-emerald-400">সম্পন্ন:</span> <strong id="stat-completed" class="text-emerald-400 font-bold ml-1">0</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- Smart Auto-Parse Entry Box -->
+    <div class="bg-slate-900/80 backdrop-blur p-5 rounded-2xl border border-slate-800 shadow-xl">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-sm font-semibold text-blue-400 flex items-center gap-2">
+          <i class="fa-solid fa-bolt text-amber-400"></i> ইজি বিলিং কুইক এন্ট্রি (Easy Billing Smart Auto-Parse)
+        </h2>
+        <span class="text-xs text-slate-500">কপি করা পুরো টেক্সট পেস্ট করে "টিকিট তুলুন" এ চাপুন</span>
+      </div>
+      <div class="flex flex-col md:flex-row gap-3">
+        <textarea id="rawInput" rows="2" placeholder="উদাহরণ: CALL-20260816-0006 NNP2554 Nasima Akter 8801912145993 ONU Red Light Rubel..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-500 text-slate-200 placeholder-slate-600 transition"></textarea>
+        <button onclick="parseAndAddTicket()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-6 py-3 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-blue-600/20">
+          <i class="fa-solid fa-plus-circle"></i> টিকিট তুলুন
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/50 p-4 rounded-2xl border border-slate-800/80">
+      
+      <!-- Search Input -->
+      <div class="relative w-full md:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-sm"></i>
+        <input type="text" id="searchInput" oninput="renderTickets()" placeholder="Call ID, NNP, মোবাইল বা নাম..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 text-slate-200">
+      </div>
+
+      <!-- Technician & Status Filters -->
+      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+        
+        <!-- Tech Filter Dropdown -->
+        <select id="techFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-300 focus:outline-none focus:border-blue-500">
+          <option value="All">সব টেকনিশিয়ান</option>
+          <option value="Rubel">Rubel</option>
+          <option value="Rimon">Rimon</option>
+          <option value="Nobin">Nobin</option>
+          <option value="Sunny">Sunny</option>
+          <option value="Abdullah">Abdullah</option>
+          <option value="Jubed">Jubed</option>
+          <option value="Unassigned">Unassigned</option>
+        </select>
+
+        <!-- Status Filter Buttons -->
+        <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <button onclick="setFilter('All')" id="btn-All" class="filter-btn bg-blue-600 text-white px-3 py-1.5 rounded-lg font-medium transition">সব</button>
+          <button onclick="setFilter('Pending')" id="btn-Pending" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">পেন্ডিং</button>
+          <button onclick="setFilter('Completed')" id="btn-Completed" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">সম্পন্ন</button>
+          <button onclick="setFilter('Rescheduled')" id="btn-Rescheduled" class="filter-btn text-slate-400 hover:text-white px-3 py-1.5 rounded-lg font-medium transition">রি-শিডিউল</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="bg-slate-900/80 backdrop-blur rounded-2xl border border-slate-800 shadow-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-950/80 text-slate-400 border-b border-slate-800 text-xs uppercase tracking-wider font-semibold">
+              <th class="p-4">কল / কাস্টমার ID</th>
+              <th class="p-4">মোবাইল</th>
+              <th class="p-4">সমস্যা ও বিবরণ (Details)</th>
+              <th class="p-4">টেকনিশিয়ান</th>
+              <th class="p-4">স্ট্যাটাস</th>
+              <th class="p-4 text-center">অ্যাকশন</th>
+            </tr>
+          </thead>
+          <tbody id="ticketTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            <!-- Dynamic Content -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- JavaScript Section -->
+  <script>
+    // -------------------------------------------------------------
+    // ১. SUPABASE কনফিগারেশন (আপনার প্রকল্পের ক্রেডেনশিয়ালস)
+    // -------------------------------------------------------------
+    const SUPABASE_URL = 'https://ntxmdhrpcphxyxsmaijf.supabase.co';
+    
+    // ⚠️ আপনার Supabase Dashboard > Settings > API Keys থেকে Publishable Key-টি কপি করে নিচের কোটেশনের ভেতরে বসান:
+    const SUPABASE_KEY = 'sb_publishable_Ck8aN-YD9JdsrP3KQRK0uQ_rBUbaW82'; 
+    
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let ticketsData = [];
+    let currentFilter = 'All';
+
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-rose-600';
+      toast.className = `${bgColor} text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 animate-bounce`;
+      toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // -------------------------------------------------------------
+    // ২. স্মার্ট অটো-পার্সার (Easy Billing Text Extractor)
+    // -------------------------------------------------------------
+    async function parseAndAddTicket() {
+      const raw = document.getElementById('rawInput').value.trim();
+      if (!raw) return showToast('ইজি বিলিং এর টেক্সট পেস্ট করুন!', 'error');
+
+      // Smart Matching Regex
+      const callIdMatch = raw.match(/CALL-[A-Za-z0-9-]+/i);
+      const nnpMatch = raw.match(/NNP\d+/i);
+      const phoneMatch = raw.match(/(?:8801|01)\d{9}/);
+
+      // Tech Name Parser
+      const techNames = ['Rubel', 'Rimon', 'Nobin', 'Sunny', 'Abdullah', 'Jubed', 'Sajjad', 'Ali', 'Mahedi', 'Rasel'];
+      let matchedTech = 'Unassigned';
+      techNames.forEach(tech => {
+        if (new RegExp(tech, 'i').test(raw)) matchedTech = tech;
+      });
+
+      const callIdVal = callIdMatch ? callIdMatch[0] : 'CALL-' + Date.now().toString().slice(-6);
+
+      const ticketObj = {
+        call_id: callIdVal,
+        customer_id: nnpMatch ? nnpMatch[0].toUpperCase() : 'N/A',
+        phone: phoneMatch ? phoneMatch[0] : 'N/A',
+        details: raw,
+        status: 'Pending',
+        assigned_to: matchedTech
+      };
+
+      // Supabase-এ সেভ করা (Updating by primary key `call_id`)
+      const { data, error } = await db.from('tickets').insert([ticketObj]);
+      if (error) {
+        showToast('সেভ করা যায়নি! Supabase Key ঠিক আছে কি না চেক করুন।', 'error');
+        console.error(error);
+      } else {
+        showToast('নতুন টিকিট সফলভাবে যোগ করা হয়েছে!');
+        document.getElementById('rawInput').value = '';
+        fetchTickets();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // ৩. ডেটা লোড ও রেন্ডারিং
+    // -------------------------------------------------------------
+    async function fetchTickets() {
+      const { data, error } = await db.from('tickets').select('*');
+      if (!error && data) {
+        ticketsData = data;
+        updateCounters();
+        renderTickets();
+      }
+    }
+
+    function updateCounters() {
+      document.getElementById('stat-total').innerText = ticketsData.length;
+      document.getElementById('stat-pending').innerText = ticketsData.filter(t => t.status === 'Pending').length;
+      document.getElementById('stat-completed').innerText = ticketsData.filter(t => t.status === 'Completed').length;
+    }
+
+    function renderTickets() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const techFilter = document.getElementById('techFilter').value;
+      const tbody = document.getElementById('ticketTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = ticketsData.filter(t => {
+        const matchesStatus = currentFilter === 'All' || t.status === currentFilter;
+        const matchesTech = techFilter === 'All' || (t.assigned_to && t.assigned_to.toLowerCase().includes(techFilter.toLowerCase()));
+        const matchesSearch = (t.call_id + t.customer_id + t.phone + t.details).toLowerCase().includes(search);
+        return matchesStatus && matchesTech && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেইন টিকিট পাওয়া যায়নি।</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const statusBadge = t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                            t.status === 'Rescheduled' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                            'bg-rose-500/10 text-rose-400 border-rose-500/30';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-800/40 transition border-b border-slate-800/40">
+            <td class="p-4">
+              <div class="font-bold text-blue-400 font-mono">${t.call_id}</div>
+              <div class="text-xs text-slate-400 font-semibold">${t.customer_id}</div>
+            </td>
+            <td class="p-4">
+              <div class="font-medium text-slate-200 font-mono">${t.phone}</div>
+            </td>
+            <td class="p-4 max-w-xs md:max-w-md">
+              <p class="text-xs text-slate-300 line-clamp-2 leading-relaxed">${t.details}</p>
+            </td>
+            <td class="p-4">
+              <span class="bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs font-medium">
+                <i class="fa-solid fa-user-gear text-slate-500 mr-1"></i>${t.assigned_to || 'Unassigned'}
+              </span>
+            </td>
+            <td class="p-4">
+              <span class="px-2.5 py-1 rounded-full text-xs font-semibold border ${statusBadge}">
+                ${t.status}
+              </span>
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex justify-center items-center gap-1.5">
+                <button onclick="updateStatus('${t.call_id}', 'Completed')" title="Done" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white p-2 rounded-xl transition">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+                <button onclick="updateStatus('${t.call_id}', 'Rescheduled')" title="Reschedule" class="bg-amber-600/20 hover:bg-amber-600 text-amber-400 hover:text-white p-2 rounded-xl transition">
+                  <i class="fa-solid fa-clock"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // -------------------------------------------------------------
+    // ৪. ১-ক্লিকে স্ট্যাটাস আপডেট (By Primary Key `call_id`)
+    // -------------------------------------------------------------
+    async function updateStatus(callId, newStatus) {
+      const { error } = await db.from('tickets').update({ status: newStatus }).eq('call_id', callId);
+      if (!error) {
+        showToast(`স্ট্যাটাস '${newStatus}' আপডেট হয়েছে!`);
+        fetchTickets();
+      } else {
+        showToast('আপডেট করা যায়নি!', 'error');
+      }
+    }
+
+    function setFilter(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+      document.getElementById(`btn-${status}`).classList.add('bg-blue-600', 'text-white');
+      document.getElementById(`btn-${status}`).classList.remove('text-slate-400');
+      renderTickets();
+    }
+
+    // অ্যাপ চালুর সাথে সাথে ডেটা ফেচ করা
+    fetchTickets();
+  </script>
+</body>
+</html>
