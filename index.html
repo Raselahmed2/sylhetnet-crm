@@ -35,11 +35,10 @@
         <span class="text-xs text-slate-300 font-medium">অপারেটর/এজেন্ট:</span>
         <select id="activeAgent" class="bg-slate-950 text-blue-400 font-bold text-xs rounded-lg border border-slate-700 px-2 py-1 focus:outline-none">
           <option value="Rasel">Rasel</option>
-          <option value="Agent 1">Agent 1</option>
-          <option value="Agent 2">Agent 2</option>
-          <option value="Agent 3">Agent 3</option>
-          <option value="Agent 4">Agent 4</option>
-          <option value="Agent 5">Agent 5</option>
+          <option value="Rihan">Rihan</option>
+          <option value="Mahdi">Mahdi</option>
+          <option value="Arman">Arman</option>
+          <option value="Abdullah">Abdullah</option>
         </select>
       </div>
 
@@ -113,7 +112,7 @@
           </select>
         </div>
 
-        <!-- Select Complain (Full Options Included) -->
+        <!-- Select Complain -->
         <div class="col-span-1 md:col-span-2">
           <label class="block text-blue-400 font-semibold mb-1">কমপ্লেন নির্বাচন করুন (Select Complain)</label>
           <select id="formDiscussion" class="w-full bg-slate-950 border border-blue-500/40 rounded-xl p-2.5 text-slate-100 font-medium focus:border-blue-500">
@@ -124,13 +123,11 @@
             <option value="Change room / রুম পরিবর্তন">Change room / রুম পরিবর্তন</option>
             <option value="Room cable extension / রুমের তার বড় করতে হবে">Room cable extension / রুমের তার বড় করতে হবে</option>
             <option value="Temporary disable / সাময়িকভাবে লাইন স্টপ হবে">Temporary disable / সাময়িকভাবে লাইন স্টপ হবে</option>
-
             <option value="Connection intermittent / কানেকশন আসা যাওয়া করে">Connection intermittent / কানেকশন আসা যাওয়া করে</option>
             <option value="Slow internet / ইন্টারনেট লাইন স্লো">Slow internet / ইন্টারনেট লাইন স্লো</option>
             <option value="Slow internet at night / রাতের বেলা ইন্টারনেট লাইন স্লো">Slow internet at night / রাতের বেলা ইন্টারনেট লাইন স্লো</option>
             <option value="Can not browse specific website / নির্দিষ্ট কোন সাইটে ব্রাউজ করা যাচ্ছে না">Can not browse specific website / নির্দিষ্ট কোন সাইটে ব্রাউজ করা যাচ্ছে না</option>
             <option value="Ping loss / PC থেকে কানেকশন পর্যন্ত পেকেট বা পিং লস">Ping loss / PC থেকে কানেকশন পর্যন্ত পেকেট বা পিং লস</option>
-
             <option value="Update bandwidth / Bandwidth Update করতে হবে">Update bandwidth / Bandwidth Update করতে হবে</option>
             <option value="Change connector / Connector পরিবর্তন">Change connector / Connector পরিবর্তন</option>
             <option value="Change media converter / Media Converter পরিবর্তন">Change media converter / Media Converter পরিবর্তন</option>
@@ -138,7 +135,6 @@
             <option value="Change router / Router পরিবর্তন">Change router / Router পরিবর্তন</option>
             <option value="Router settings / Router সেটিংস">Router settings / Router সেটিংস</option>
             <option value="Password change / পাসওয়ার্ড পরিবর্তন">Password change / পাসওয়ার্ড পরিবর্তন</option>
-
             <option value="Complaint against support staff / সাপোর্ট ম্যান এর বিরুদ্ধে কমপ্লেন">Complaint against support staff / সাপোর্ট ম্যান এর বিরুদ্ধে কমপ্লেন</option>
             <option value="Monthly bill complaint / মাসিক ভাড়া নিয়ে অভিযোগ">Monthly bill complaint / মাসিক ভাড়া নিয়ে অভিযোগ</option>
             <option value="Disconnect line for customer leaving home / গ্রাহক চলে যাওয়ার কারণে বিচ্ছিন্ন">Disconnect line for customer leaving home / গ্রাহক চলে যাওয়ার কারণে বিচ্ছিন্ন</option>
@@ -149,7 +145,7 @@
 
         <!-- Assign Complain To User/Tech -->
         <div>
-          <label class="block text-slate-400 mb-1">অ্যাসাইন টেকনিশিয়ান (Assign To)</label>
+          <label class="block text-slate-400 mb-1">অ্যাসাইন টেকনিশিয়ান (Assign To)</label>
           <select id="formAssignedTech" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
             <option value="Unassigned">Unassigned</option>
             <option value="Rubel">Rubel</option>
@@ -166,7 +162,7 @@
 
         <!-- Priority -->
         <div>
-          <label class="block text-slate-400 mb-1">প্রায়োরিটি (Priority)</label>
+          <label class="block text-slate-400 mb-1">প্রায়োরিটি (Priority)</label>
           <select id="formPriority" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500">
             <option value="Normal">Normal</option>
             <option value="High">High (জরুরি)</option>
@@ -220,7 +216,7 @@
         <!-- Remarks -->
         <div class="col-span-1 md:col-span-3 lg:col-span-4">
           <label class="block text-slate-400 mb-1">রিমার্কস / বিস্তারিত বিবরণ</label>
-          <textarea id="formRemarks" rows="2" placeholder="কাস্টমারের দেওয়া অতিরিক্ত তথ্য বা নোট লিখুন..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500"></textarea>
+          <textarea id="formRemarks" rows="2" placeholder="কাস্টমারের দেওয়া অতিরিক্ত তথ্য বা নোট লিখুন..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-blue-500"></textarea>
         </div>
 
       </div>
@@ -261,15 +257,14 @@
         <select id="agentFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300">
           <option value="All">সকল এজেন্টের টিকিট</option>
           <option value="Rasel">Rasel</option>
-          <option value="Agent 1">Agent 1</option>
-          <option value="Agent 2">Agent 2</option>
-          <option value="Agent 3">Agent 3</option>
-          <option value="Agent 4">Agent 4</option>
-          <option value="Agent 5">Agent 5</option>
+          <option value="Rihan">Rihan</option>
+          <option value="Mahdi">Mahdi</option>
+          <option value="Arman">Arman</option>
+          <option value="Abdullah">Abdullah</option>
         </select>
 
         <select id="techFilter" onchange="renderTickets()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300">
-          <option value="All">সকল টেকনিশিয়ান</option>
+          <option value="All">সকল টেকনিশিয়ান</option>
           <option value="Rubel">Rubel</option>
           <option value="Rimon">Rimon</option>
           <option value="Nobin">Nobin</option>
@@ -313,7 +308,7 @@
   <!-- JavaScript Code Section -->
   <script>
     // -------------------------------------------------------------
-    // ১. SUPABASE কনফিগারেশন (Unchanged Credentials)
+    // SUPABASE Конফিগারেশন
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://ntxmdhrpcphxyxsmaijf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Ck8aN-YD9JdsrP3KQRK0uQ_rBUbaW82'; 
@@ -387,9 +382,9 @@
       const { error } = await db.from('tickets').insert([ticketObj]);
 
       if (error) {
-        alert('❌ কমপ্লেন জমা হয়নি: ' + error.message);
+        alert('❌ কমপ্লেন জমা হয়নি: ' + error.message);
       } else {
-        alert('✅ কমপ্লেন টিকিট সফলভাবে জমা হয়েছে!');
+        alert('✅ কমপ্লেন টিকিট সফলভাবে জমা হয়েছে!');
         document.getElementById('formNnp').value = '';
         document.getElementById('formPhone').value = '';
         document.getElementById('formRemarks').value = '';
@@ -424,18 +419,21 @@
 
       const { error } = await db.from('tickets').insert([ticketObj]);
       if (error) {
-        alert('❌ সেভ হয়নি: ' + error.message);
+        alert('❌ সেভ হয়নি: ' + error.message);
       } else {
-        alert('✅ কুইক টিকিট সেভ হয়েছে!');
+        alert('✅ কুইক টিকিট সেভ হয়েছে!');
         document.getElementById('rawInput').value = '';
         fetchTickets();
       }
     }
 
-    // Load Tickets
+    // Load Tickets (Fixed order column to avoid created_at missing error)
     async function fetchTickets() {
-      const { data, error } = await db.from('tickets').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
+      const { data, error } = await db.from('tickets').select('*').order('id', { ascending: false });
+      if (error) {
+        console.error('Supabase Error:', error);
+        alert('❌ ডাটা লোড করা যাচ্ছে না: ' + error.message);
+      } else if (data) {
         ticketsData = data;
         updateCounters();
         renderTickets();
@@ -464,7 +462,7 @@
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেন রেকর্ড পাওয়া যায়নি।</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">কোনো কমপ্লেন রেকর্ড পাওয়া যায়নি।</td></tr>`;
         return;
       }
 
