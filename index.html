@@ -308,7 +308,7 @@
   <!-- JavaScript Code Section -->
   <script>
     // -------------------------------------------------------------
-    // SUPABASE Конফিগারেশন
+    // SUPABASE কনফিগারেশন
     // -------------------------------------------------------------
     const SUPABASE_URL = 'https://ntxmdhrpcphxyxsmaijf.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Ck8aN-YD9JdsrP3KQRK0uQ_rBUbaW82'; 
@@ -427,17 +427,18 @@
       }
     }
 
-    // Load Tickets (Fixed order column to avoid created_at missing error)
+    // Load Tickets (No sorting order column needed, safely reverses fetched array)
     async function fetchTickets() {
-      const { data, error } = await db.from('tickets').select('*').order('id', { ascending: false });
+      const { data, error } = await db.from('tickets').select('*');
+      
       if (error) {
         console.error('Supabase Error:', error);
         alert('❌ ডাটা লোড করা যাচ্ছে না: ' + error.message);
       } else if (data) {
-        ticketsData = data;
+        ticketsData = data.reverse(); 
         updateCounters();
         renderTickets();
-      }
+      } 
     }
 
     function updateCounters() {
